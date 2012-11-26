@@ -1,0 +1,74 @@
+Heaptopy: Heap Scanning Library
+Because disorder is how the universe works...
+=============================================
+
+Summary
+-------
+Heaptropy is a shared library that catches and logs all calls to malloc() and
+free().  This is to be used with LD_PRELOAD.  Upon program termination the
+process' heap segment of memory is scanned.  Starting from the beginning of the
+heap and working towards the end, the value of each address is looked at.  The
+value is treated as an address and if it resides within the memory of the heap
+then heaptropy says that the address points to the value.
+
+NOTE: This will overwrite files named "sniff.log" and "sniff_scan1.log"
+
+Building
+--------
+Run 'make'
+
+Usage
+-----
+The heaptropy library works by catching all calls to malloc and free.  To do this,
+heaptropy must be loaded before the program that is to be scanned.  This is
+simple, and can be accomplished by usng the 'LD_PRELOAD' function of the GNU ld
+utility.  For instance, to scan the 'ls -la' command:
+bash shell:
+    LD_PRELOAD=./libheaptropy.so ls -la
+
+Caveats
+-------
+This is not scientific!  First, the heap is never cleared before it is scanned.
+This means that the scanner might operate on heap data not-cleared from other
+processes that have previously terminated.
+
+Secondly, the heap scan is similar to a conservative garbage collector.  If the
+value at the heap address looks like another address in the heap, the scanner
+will output that the address points-to the value.  There could be cases where
+large values in the heap (e.g. large integer values) look like pointer data to
+other heap objects.  If the scanner sees such a value the heap scanner will say
+it is an address.  In other words, if it looks like an address, the heap scanner
+will say it is one.
+
+Two files are produced:
+sniff.log: Produced during runtime and contains data about each malloc and free
+           call.
+
+sniff_scan1.log: Produced upon program exit and contains the
+                 address-points-to-value mapping described above.
+
+make_graph.py
+-------------
+This tool reads in the sniff.log and sniff_scan.log and determines which
+allocation a heap address resides in.
+
+This comparison is simple, each heap address output from the scanner
+(sniff_scan1.log) is matched to a malloc() in the sniff.log.  If the address is
+not a match, it is still output.  Either way, the address contains data that
+looks like a heap address.  The result is a .dot depicting which address points
+to the which other address. 
+
+Thanks
+------
+757labs.org
+
+Special thanks to Google and stackoverflow.com where I learned about wrapping
+routines in the GNU/Linux system.  Much of the wrapping code here was
+paraphrased from Checker's post over at stackoverflow.com
+Thanks Checkers!
+<http://stackoverflow.com/questions/262439/create-a-wrapper-function-for-malloc-and-free-in-c>
+
+Contact
+-------
+Matt Davis (enferex)
+mattdavis9@gmail.com
