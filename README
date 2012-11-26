@@ -30,7 +30,8 @@ Caveats
 -------
 This is not scientific!  First, the heap is never cleared before it is scanned.
 This means that the scanner might operate on heap data not-cleared from other
-processes that have previously terminated.
+processes that have previously terminated.  Hopefully, your kernel will clear
+the heap before-hand (as is a security issue otherwise).
 
 Secondly, the heap scan is similar to a conservative garbage collector.  If the
 value at the heap address looks like another address in the heap, the scanner
